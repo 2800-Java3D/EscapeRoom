@@ -15,7 +15,7 @@ import org.jogamp.java3d.WakeupOr;
 import org.jogamp.vecmath.Vector3d;
 
 /*
- * In your create scene method, right
+ * In your create scene method, write
  * 
  * KeyMovement km = new KeyMovement(sceneTG); 	
  * km.setSchedulingBounds(new BoundingSphere());
