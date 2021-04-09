@@ -17,19 +17,20 @@ import org.jogamp.java3d.utils.universe.SimpleUniverse;
 import org.jogamp.java3d.utils.universe.ViewingPlatform;
 import org.jogamp.vecmath.*;
 
-import codesEK280.CodeAssign1;
-import codesEK280.CommonsEK;
 
 public class DoorIndicator extends JPanel {
 	
 	public int selection = 0;
 	
+	private static NetEscapeRoom thisFBF;
+	private static int pid;
+	
 	private static final long serialVersionUID = 1L;
 	
-	private static boolean sunAttained;
-	private static boolean moonAttained; 
-	private static boolean jupiterAttained;
-	private static boolean neptuneAttained;
+	static boolean sunAttained = false;
+	static boolean moonAttained = true;
+	static boolean jupiterAttained = true;
+	static boolean neptuneAttained = false;
 	
 	private static Sphere sun = createSphere(0.25f, 80, Commons.Orange, "galaxy.jpg");
 	private static Sphere jupiter = createSphere(0.25f, 80, Commons.Orange, "galaxy.jpg");
@@ -42,7 +43,7 @@ public class DoorIndicator extends JPanel {
 	 */
 	private static Material setMaterial(Color3f diffuseColor) {
 		
-		int shine = 128;
+		int shine = 10;
 		
 		Material material = new Material();
 		
@@ -104,7 +105,7 @@ public class DoorIndicator extends JPanel {
 		
 	}
 	
-	private static Appearance setAppearance(Color3f attributesColor, Color3f materialColor, String texture) {
+	static Appearance setAppearance(Color3f attributesColor, Color3f materialColor, String texture) {
 
 		Appearance app = new Appearance();
 		
@@ -250,10 +251,10 @@ public class DoorIndicator extends JPanel {
 		
 	}
 	
-	static TransformGroup doorModel (float scl) {
+	static TransformGroup doorModel (float scl, Vector3f vec) {
 		
 		Transform3D scaler = new Transform3D();
-		scaler.setScale(scl);
+		scaler.set(scl, vec);
 		
 		TransformGroup door = new TransformGroup(scaler);
 		door.addChild(doorBlock());
@@ -265,7 +266,19 @@ public class DoorIndicator extends JPanel {
 		
 	}
 	
-	private static void checkJupiter() {
+	static void setJupiter(boolean value) {
+		jupiterAttained = value;
+	}
+	
+	static void setNeptune(boolean value) {
+		neptuneAttained = value;
+	}
+	
+	static void setSun(boolean value) {
+		sunAttained = value;
+	}
+	
+	static void checkJupiter() {
 	
 		if (jupiterAttained) {
 			Appearance app = new Appearance();
@@ -275,7 +288,7 @@ public class DoorIndicator extends JPanel {
 		
 	}
 	
-	private static void checkNeptune() {
+	static void checkNeptune() {
 		
 		if (neptuneAttained) {
 			Appearance app = new Appearance();
@@ -285,7 +298,7 @@ public class DoorIndicator extends JPanel {
 		
 	}
 	
-	private static void checkSun() {
+	static void checkSun() {
 		
 		if (sunAttained) {
 			Appearance app = new Appearance();
@@ -295,7 +308,7 @@ public class DoorIndicator extends JPanel {
 		
 	}
 	
-	private static void checkMoon() {
+	static void checkMoon() {
 		
 		if (moonAttained) {
 			Appearance app = new Appearance();
@@ -303,6 +316,13 @@ public class DoorIndicator extends JPanel {
 			moon.setAppearance(app);
 		}
 		
+	}
+	
+	static void checkIFcomplete() {
+		if(jupiterAttained && neptuneAttained && sunAttained && moonAttained) {
+			thisFBF.gameWon(pid);
+			//thisFBF.setStatus("Winner!");
+		}
 	}
 	
 	/* A function to position viewer to 'eye' location */
@@ -331,7 +351,7 @@ public class DoorIndicator extends JPanel {
 	}
 	
 	/* A function to add ambient light and a point light to 'sceneBG' */
-	public static void addLights(BranchGroup sceneBG, Color3f clr) {		
+	static void addLights(BranchGroup sceneBG, Color3f clr) {		
 		
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
 		
@@ -350,17 +370,18 @@ public class DoorIndicator extends JPanel {
 	}
 	
 	/* A function to build the content branch and attach to 'scene' */
-	private static BranchGroup createScene(BranchGroup sceneBG) {
+	static BranchGroup createScene(BranchGroup sceneBG) {
 		
-		TransformGroup sceneTG = new TransformGroup();    // create a TransformGroup (TG)
+		TransformGroup scenePG = new TransformGroup();    // create a TransformGroup (TG)
+		scenePG.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+		scenePG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 		
-		sceneBG.addChild(sceneTG);	                         // add TG to the scene BranchGroup
-		//sceneBG.addChild(CommonsEK.rotateBehavior(10000, sceneTG)); 	// make sceneTG continuously rotating 
-		sceneBG.addChild(CodeAssign1.axisFrame(Commons.Blue, 1.0f));
+		sceneBG.addChild(scenePG);	                         // add TG to the scene BranchGroup
+		//sceneBG.addChild(CodeAssign1.axisFrame(CommonsEK.Blue, 1.0f));
 		
 		addLights(sceneBG, Commons.White);
 		
-		sceneTG.addChild(doorModel(2));
+		scenePG.addChild(doorModel(2, new Vector3f(0, 0, 0)));
 		
 		checkJupiter();
 		checkNeptune();
@@ -372,14 +393,14 @@ public class DoorIndicator extends JPanel {
 	}
 	
 	/* A constructor to set up and run the application */
-	public DoorIndicator() {
+	public DoorIndicator(BranchGroup sceneBG, NetEscapeRoom fbf, int playerID) {
 		
-		//Values set to false because no puzzles are completed at commencement of game
-		neptuneAttained = false;
-		jupiterAttained = false;
-		moonAttained = false;
-		sunAttained = false;
+		createScene(sceneBG);
 		
+		thisFBF = fbf;
+		pid = playerID;
+		
+		/*
 		GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
 		Canvas3D canvas_3D = new Canvas3D(config);
 		SimpleUniverse su = new SimpleUniverse(canvas_3D);   // create a SimpleUniverse                                    
@@ -395,14 +416,17 @@ public class DoorIndicator extends JPanel {
 		setLayout(new BorderLayout());
 		add("Center", canvas_3D);		
 		setVisible(true);
+		*/
 		
 	}
 
+	/*
 	public static void main(String[] args) {
 		JFrame frame = new JFrame("Door Indicator Model"); 
 		frame.getContentPane().add(new DoorIndicator());         // create an instance of the class
 		frame.setSize(600, 600);                             // set the size of the JFrame
 		frame.setVisible(true);
 	}
+	*/
 	
 }

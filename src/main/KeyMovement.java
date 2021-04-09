@@ -1,6 +1,5 @@
 package main;
 
-
 import java.awt.AWTEvent;
 
 import java.awt.event.KeyEvent;
@@ -30,11 +29,7 @@ import org.jogamp.vecmath.Vector3d;
  * 
  */
 
-
-
-
-public class KeyMovement extends Behavior
-{
+public class KeyMovement extends Behavior {
 	
 	protected static final double NORMAL = 1.0;
 	protected static final double SLOW = 0.5;
@@ -43,29 +38,25 @@ public class KeyMovement extends Behavior
 	protected Transform3D trans3D;
 	protected WakeupCondition keyCriterion;
 
-	
-	
 	private double rot = Math.PI / 16.0;
 	
-	private double move = 5;
+	private double move = 1;
 	private double speed = NORMAL;
 
-	private final double forwardScale = 1.0;
-	private final double backwardScale = 0.75;
+	private final double forwardScale = 0.5;
+	private final double backwardScale = 0.25;
 
 	private int fw = KeyEvent.VK_UP;
 	private int bk = KeyEvent.VK_DOWN;
 	private int lf = KeyEvent.VK_LEFT;
 	private int rt = KeyEvent.VK_RIGHT;
 
-	public KeyMovement( TransformGroup scene )
-	{
+	public KeyMovement( TransformGroup scene ) {
 		trans = scene;
 		trans3D = new Transform3D( );
 	}
 
-	public void initialize( )
-	{
+	public void initialize( ) {
 		WakeupCriterion[] keyEvents = new WakeupCriterion[2];
 		keyEvents[0] = new WakeupOnAWTEvent( KeyEvent.KEY_PRESSED );
 		keyEvents[1] = new WakeupOnAWTEvent( KeyEvent.KEY_RELEASED );
@@ -74,13 +65,13 @@ public class KeyMovement extends Behavior
 		wakeupOn( keyCriterion );
 	}
 
-	public void processStimulus( Iterator<WakeupCriterion> criteria)
-	{
+	public void processStimulus( Iterator<WakeupCriterion> criteria) {
+		
 		WakeupCriterion wakeup;
 		AWTEvent[] event;
 
-		while(  criteria.hasNext())
-		{
+		while(criteria.hasNext()) {
+			
 			wakeup = (WakeupCriterion) criteria.next();
 
 			if( !(wakeup instanceof WakeupOnAWTEvent) )	
@@ -104,17 +95,16 @@ public class KeyMovement extends Behavior
 	{
 		int keycode = event.getKeyCode( );
 		
-		//if shift is pressed, slow down otherwise normal
+		//If shift is pressed, slow down otherwise normal
 		if(event.isShiftDown( )) 
 			speed = SLOW;
 		else 
 			speed = NORMAL;
 		
-		
 		standardMove( keycode );
 	}
 
-	//moves forward backward or rotates left right
+	//Moves forward backward or rotates left right
 	private void standardMove( int keycode )
 	{
 		if(keycode == fw)
@@ -127,9 +117,7 @@ public class KeyMovement extends Behavior
 			rotRight( );
 	}
 
-
-	//buffer methods to set movement positions
-	
+	//Buffer methods to set movement positions
 	private void moveForward( )
 	{
 		doMove( new Vector3d( 0.0,0.0, forwardScale * speed ) );
@@ -155,10 +143,8 @@ public class KeyMovement extends Behavior
 	{
 		trans.setTransform( trans3D );
 	}
-
 	
-	//transforms the scene either rotation or movement
-	
+	//Transforms the scene either rotation or movement
 	protected void doRotateY( double radians )
 	{
 		trans.getTransform( trans3D );
@@ -167,7 +153,6 @@ public class KeyMovement extends Behavior
 		trans3D.mul( toMove );
 		updateTransform( );
 	}
-
 
 	protected void doMove( Vector3d theMove )
 	{
@@ -178,55 +163,42 @@ public class KeyMovement extends Behavior
 		updateTransform();
 	}
 
-
-	//returns the proper values of movement, rotation left and right rates
-
+	//Returns the proper values of movement, rotation left and right rates
 	protected double getMovementRate( )
 	{
 		return move * speed;
 	}
-
-
 
 	protected double getRotateLeftAmount( )
 	{
 		return rot * speed;
 	}
 
-
-
 	protected double getRotateRightAmount( )
 	{
 		return -rot * speed;
 	}
 
-
 	//Allows programmer to change values on the fly in their create scene method
-	
 	public void setRotateYAmount( double radians )
 	{
 		rot = radians;
 	}
-
 
 	public void setMovementRate( double meters )
 	{
 		move = meters; // Travel rate in meters/frame
 	}
 
-
-
 	public void setForwardKey( int key )
 	{
 		fw = key;
 	}
 
-
 	public void setBackKey( int key )
 	{
 		bk = key;
 	}
-
 
 	public void setLeftKey( int key )
 	{
