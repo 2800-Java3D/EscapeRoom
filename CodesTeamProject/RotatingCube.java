@@ -1,7 +1,11 @@
 package CodesTeamProject;
 
-import java.awt.Font;
 import java.util.Random;
+
+
+import java.awt.*;
+
+import javax.swing.JPanel;
 
 import org.jdesktop.j3d.examples.collision.Box;
 import org.jogamp.java3d.Appearance;
@@ -15,12 +19,17 @@ import org.jogamp.java3d.Text3D;
 import org.jogamp.java3d.Transform3D;
 import org.jogamp.java3d.TransformGroup;
 import org.jogamp.java3d.utils.geometry.ColorCube;
+import org.jogamp.java3d.utils.universe.SimpleUniverse;
 import org.jogamp.vecmath.Color3f;
 import org.jogamp.vecmath.Point3d;
 import org.jogamp.vecmath.Point3f;
 import org.jogamp.vecmath.Vector3d;
 
-public class RotatingCube {
+
+
+
+
+public class RotatingCube{
 	
 	//Positions for color box's and array to save them
 	private static Vector3d box_left = new Vector3d(-2.25, -0.25, -3);
@@ -32,8 +41,10 @@ public class RotatingCube {
 	//to store random numbers
 	private static int randomNums[] = new int[4];
 	
+	
 	//set colors for sequence.
 	private static Color3f colors[] = {CommonsEK.Red, CommonsEK.Blue, CommonsEK.Green, CommonsEK.Yellow};
+	
 	
 	//This is the stand for the rotating cube
 	private static TransformGroup createColumn(double scale, Vector3d pos) {	
@@ -177,29 +188,32 @@ public class RotatingCube {
 		
 	}
 
-	static BranchGroup createScene() {
+	public static BranchGroup createScene() {
 		BranchGroup sceneBG = new BranchGroup();		     // create 'objsBG' for content
 		TransformGroup sceneTG = new TransformGroup();       // create a TransformGroup (TG)
 		sceneBG.addChild(sceneTG);	                         // add TG to the scene BranchGroup
 		
-		//Allyssa's Appearance Class for AppearanceExtra
+		//Alyssa's Appearance Class for AppearanceExtra
 		sceneBG.addChild(AppearanceExtra.createBackground("backgroundLight.jpg"));
 		sceneTG.addChild(createColumn(0.5, new Vector3d(0,-2.5,0)));
 		sceneTG.addChild(createCube(0.5, new Vector3d(0,-0.75,0)));
-		//AppearanceExtra.addLights(sceneTG);
+		AppearanceExtra.addLights(sceneTG);
+		
 		
 		sceneBG.compile(); 		// optimize objsBG
 		return sceneBG;
 	}
 	
+	
 	public static void main(String[] args) {
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				CommonsEK.setEye(new Point3d(0, 2.5, 7.5));
-				new CommonsEK.MyGUI(createScene(), "Rotating Cube Puzzle");
+				Commons.setEye(new Point3d(0, 2.5, 7.5));
+				new Commons.MyGUI(createScene(), "JJ's Rotating Cube");
 			}
 		});
 	}
+	
 
 	
 }

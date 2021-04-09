@@ -235,7 +235,7 @@ import org.jogamp.vecmath.*;
 		TransformGroup sceneTG = new TransformGroup();       // create a TransformGroup (TG)
 		sceneBG.addChild(sceneTG);	                         // add TG to the scene BranchGroup
 		
-		sceneBG.addChild(AppearanceExtra.createBackground("background.jpg"));
+		sceneBG.addChild(AppearanceExtra.createBackground("backgroundLight.jpg"));
 
 		AppearanceExtra.addLights(sceneTG);
 		sceneBG.addChild(createMeasure());
@@ -251,7 +251,7 @@ import org.jogamp.vecmath.*;
 		public static void main(String[] args) {
 			java.awt.EventQueue.invokeLater(new Runnable() {
 				public void run() {
-					CommonsEK.setEye(new Point3d(0.0, 0.35, 25.0));
+					//CommonsEK.setEye(new Point3d(0.0, 0.35, 25.0));
 					new CommonsEK.MyGUI(createScene(), "Wheel Puzzle");
 				}
 			});

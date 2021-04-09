@@ -80,6 +80,9 @@ public class DialBehavior extends Behavior {
 		if(level == 4) {
 			addText();
 			r.setAlpha(new Alpha(-1, 0));
+			DoorIndicator.setSun(true);
+			DoorIndicator.checkSun();
+			DoorIndicator.checkIFcomplete();
 		}
 
 

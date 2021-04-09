@@ -22,11 +22,14 @@ public class DoorIndicator extends JPanel {
 	
 	public int selection = 0;
 	
+	private static NetEscapeRoom thisFBF;
+	private static int pid;
+	
 	private static final long serialVersionUID = 1L;
 	
 	static boolean sunAttained = false;
 	static boolean moonAttained = true;
-	static boolean jupiterAttained = false;
+	static boolean jupiterAttained = true;
 	static boolean neptuneAttained = false;
 	
 	private static Sphere sun = createSphere(0.25f, 80, CommonsEK.Orange, "galaxy.jpg");
@@ -315,6 +318,13 @@ public class DoorIndicator extends JPanel {
 		
 	}
 	
+	static void checkIFcomplete() {
+		if(jupiterAttained && neptuneAttained && sunAttained && moonAttained) {
+			thisFBF.gameWon(pid);
+			//thisFBF.setStatus("Winner!");
+		}
+	}
+	
 	/* A function to position viewer to 'eye' location */
 	private void defineViewer(SimpleUniverse simple_U, Point3d eye) {
 
@@ -362,14 +372,16 @@ public class DoorIndicator extends JPanel {
 	/* A function to build the content branch and attach to 'scene' */
 	static BranchGroup createScene(BranchGroup sceneBG) {
 		
-		TransformGroup sceneTG = new TransformGroup();    // create a TransformGroup (TG)
+		TransformGroup scenePG = new TransformGroup();    // create a TransformGroup (TG)
+		scenePG.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+		scenePG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 		
-		sceneBG.addChild(sceneTG);	                         // add TG to the scene BranchGroup
+		sceneBG.addChild(scenePG);	                         // add TG to the scene BranchGroup
 		//sceneBG.addChild(CodeAssign1.axisFrame(CommonsEK.Blue, 1.0f));
 		
 		addLights(sceneBG, CommonsEK.White);
 		
-		sceneTG.addChild(doorModel(2, new Vector3f(0, 0, 0)));
+		scenePG.addChild(doorModel(2, new Vector3f(0, 0, 0)));
 		
 		checkJupiter();
 		checkNeptune();
@@ -381,8 +393,14 @@ public class DoorIndicator extends JPanel {
 	}
 	
 	/* A constructor to set up and run the application */
-	public DoorIndicator() {
+	public DoorIndicator(BranchGroup sceneBG, NetEscapeRoom fbf, int playerID) {
 		
+		createScene(sceneBG);
+		
+		thisFBF = fbf;
+		pid = playerID;
+		
+		/*
 		GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
 		Canvas3D canvas_3D = new Canvas3D(config);
 		SimpleUniverse su = new SimpleUniverse(canvas_3D);   // create a SimpleUniverse                                    
@@ -398,14 +416,17 @@ public class DoorIndicator extends JPanel {
 		setLayout(new BorderLayout());
 		add("Center", canvas_3D);		
 		setVisible(true);
+		*/
 		
 	}
 
+	/*
 	public static void main(String[] args) {
 		JFrame frame = new JFrame("Door Indicator Model"); 
 		frame.getContentPane().add(new DoorIndicator());         // create an instance of the class
 		frame.setSize(600, 600);                             // set the size of the JFrame
 		frame.setVisible(true);
 	}
+	*/
 	
 }

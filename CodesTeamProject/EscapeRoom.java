@@ -1,6 +1,7 @@
 package CodesTeamProject;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -22,14 +23,26 @@ import org.jogamp.vecmath.*;
 public class EscapeRoom extends JPanel implements MouseListener {
 	
 	private static final long serialVersionUID = 1L;
-	private Canvas3D canvas;
+	//private Canvas3D canvas;
+	OverlayCanvas canvas3D;
 	public static PickTool pickTool;
+	
+	private static final int PWIDTH = 800;                   // size of panel
+	private static final int PHEIGHT = 800;
+	
+	private SimpleUniverse su;
+	private static BranchGroup sceneBG;
+	private BoundingSphere bounds;
+	private static DoorIndicator dI;
+	
+	private static NetEscapeRoom thisFBF;
+	private static int pid;
 	
 	/* A function to position viewer to 'eye' location */
 	private void defineViewer (SimpleUniverse simple_U, Point3d eye) {
 
 	    TransformGroup viewTransform = simple_U.getViewingPlatform().getViewPlatformTransform();
-		Point3d center = new Point3d(0, 0, 0);               //Define the point where the eye looks at
+		Point3d center = new Point3d(10, 5.0, 0);               //Define the point where the eye looks at
 		Vector3d up = new Vector3d(0, 1, 0);                 //Define camera's up direction
 		Transform3D view_TM = new Transform3D();
 		view_TM.lookAt(eye, center, up);
@@ -44,7 +57,7 @@ public class EscapeRoom extends JPanel implements MouseListener {
 		ViewingPlatform view_platfm = simple_U.getViewingPlatform();
 		TransformGroup view_TG = view_platfm.getViewPlatformTransform();
 		KeyNavigatorBehavior keyNavBeh = new KeyNavigatorBehavior(view_TG);
-		BoundingSphere view_bounds = new BoundingSphere(new Point3d(), 20.0);
+		BoundingSphere view_bounds = new BoundingSphere(new Point3d(), 50.0);
 		keyNavBeh.setSchedulingBounds(view_bounds);
 		return keyNavBeh;
 		
@@ -64,11 +77,11 @@ public class EscapeRoom extends JPanel implements MouseListener {
 		int x = event.getX();
 		int y = event.getY(); 
 		Point3d point3d = new Point3d(), center = new Point3d();
-		canvas.getPixelLocationInImagePlate(x, y, point3d); 		//Obtain AWT pixel in ImagePlate coordinates
-		canvas.getCenterEyeInImagePlate(center); 					//Obtain eye's position in IP coordinates
+		canvas3D.getPixelLocationInImagePlate(x, y, point3d); 		//Obtain AWT pixel in ImagePlate coordinates
+		canvas3D.getCenterEyeInImagePlate(center); 					//Obtain eye's position in IP coordinates
 
 		Transform3D transform3D = new Transform3D(); 				//Matrix to relate ImagePlate coordinates~
-		canvas.getImagePlateToVworld(transform3D); 					//To Virtual World coordinates
+		canvas3D.getImagePlateToVworld(transform3D); 					//To Virtual World coordinates
 		transform3D.transform(point3d); 							//Transform 'point3d' with 'transform3D'
 		transform3D.transform(center); 								//Transform 'center' with 'transform3D'
 
@@ -92,6 +105,7 @@ public class EscapeRoom extends JPanel implements MouseListener {
 				
 				DoorIndicator.setJupiter(true);
 				DoorIndicator.checkJupiter();
+				DoorIndicator.checkIFcomplete();
 				checkDoor();
 				
 			}
@@ -103,7 +117,7 @@ public class EscapeRoom extends JPanel implements MouseListener {
 	/* A function to add ambient light and a point light to 'sceneBG' */
 	static void addLights (BranchGroup sceneBG, Color3f clr) {		
 		
-		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 1000.0);
+		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 10, 0.0), 1000.0);
 		
 		AmbientLight amLgt = new AmbientLight(new Color3f(0.2f, 0.2f, 0.2f));
 		amLgt.setInfluencingBounds(bounds);
@@ -307,6 +321,9 @@ public class EscapeRoom extends JPanel implements MouseListener {
 		
 	}
 	
+	
+	
+	
 	private static void createRoom (BranchGroup sceneBG, float scale) {
 		
 		Transform3D t3D = new Transform3D();
@@ -324,7 +341,8 @@ public class EscapeRoom extends JPanel implements MouseListener {
 	private static TransformGroup positionDoor (float scl) {
 		
 		BranchGroup bg = new BranchGroup();
-		DoorIndicator.createScene(bg);
+		//DoorIndicator.createScene(bg);
+		dI = new DoorIndicator(bg, thisFBF, pid);
 		
 		Transform3D t3D = new Transform3D();
 		t3D.set(scl, new Vector3f(0, 3, 0));
@@ -378,13 +396,20 @@ public class EscapeRoom extends JPanel implements MouseListener {
 		
 	}
 	
-	/* A function to build the content branch and attach to 'scene' */
-	private static BranchGroup createScene (BranchGroup sceneBG) {
+	public void youWon() {
+		defineViewer(su, new Point3d(-5, 4, 0));
 		
+		
+	}
+	
+	/* A function to build the content branch and attach to 'scene' */
+	private void createSceneGraph() {
+		sceneBG = new BranchGroup();
 		TransformGroup sceneTG = new TransformGroup();   
 		sceneTG.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
 		sceneTG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 		
+		sceneBG.addChild(keyNavigation(su));
 		sceneBG.addChild(sceneTG);	
 		
 		pickTool = new PickTool(sceneBG);
@@ -397,50 +422,54 @@ public class EscapeRoom extends JPanel implements MouseListener {
 		sceneTG.addChild(positionPainting(2.5f));
 		sceneTG.addChild(postionRotatingCube(1.0f));
 		sceneTG.addChild(positionWheel(0.80f));
-
-		/*
-			KeyMovement km = new KeyMovement(sceneTG); 	
-			km.setForwardKey(KeyEvent.VK_W);
-			km.setLeftKey(KeyEvent.VK_A);
-			km.setBackKey(KeyEvent.VK_S);
-			km.setRightKey(KeyEvent.VK_D);
-			km.setSchedulingBounds(new BoundingSphere());
-			sceneBG.addChild(km); 
-		*/
 		
-		return sceneBG;
+		
+		
+		sceneBG.compile();
 	
 	}
 	
 	/* A constructor to set up and run the application */
-	public EscapeRoom() {
+	public EscapeRoom(NetEscapeRoom fbf, int playerID) {
+		setLayout(new BorderLayout());
+		setOpaque(false);
+		setPreferredSize(new Dimension(PWIDTH, PHEIGHT));
+		
 		
 		GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
-		canvas = new Canvas3D(config);
-		canvas.addMouseListener(this); // NOTE: enable mouse clicking
+		canvas3D = new OverlayCanvas(config, fbf);
+		canvas3D.addMouseListener(this); // NOTE: enable mouse clicking
+		canvas3D.setFocusable(true);                    // give focus to the canvas
+		canvas3D.requestFocus();
+		canvas3D.setVisible(true);
+		add("Center", canvas3D);
+		su = new SimpleUniverse(canvas3D);   // create a SimpleUniverse                                    
+		defineViewer(su, new Point3d(-5, 4, 0));    // set the viewer's location
 		
-		SimpleUniverse su = new SimpleUniverse(canvas);   // create a SimpleUniverse                                    
-		defineViewer(su, new Point3d(8, 4, 6));    // set the viewer's location
 		
-		BranchGroup scene = new BranchGroup();		
-		createScene(scene);                           // add contents to the scene branch
+		thisFBF = fbf;
+		pid = playerID;
+			
+		createSceneGraph();                           // add contents to the scene branch
 		
-		scene.addChild(keyNavigation(su));                   // allow key navigation
+		                   // allow key navigation
+				                             // optimize the BranchGroup
+		su.addBranchGraph(sceneBG);                            // attach the scene to SimpleUniverse
 		
-		scene.compile();		                             // optimize the BranchGroup
-		su.addBranchGraph(scene);                            // attach the scene to SimpleUniverse
-		
-		setLayout(new BorderLayout());
-		add("Center", canvas);		
-		setVisible(true);
+			
+		//setVisible(true);
 		
 	}
 
+	
+
+	/*
 	public static void main (String[] args) {
 		JFrame frame = new JFrame("Escape Room"); 
 		frame.getContentPane().add(new EscapeRoom());         // create an instance of the class
 		frame.setSize(600, 600);                             // set the size of the JFrame
 		frame.setVisible(true);
 	}
+	*/
 	
 }

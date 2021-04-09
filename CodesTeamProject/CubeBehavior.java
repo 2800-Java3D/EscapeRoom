@@ -14,19 +14,22 @@ import org.jogamp.java3d.BranchGroup;
 import org.jogamp.java3d.ColoringAttributes;
 import org.jogamp.java3d.Font3D;
 import org.jogamp.java3d.FontExtrusion;
+import org.jogamp.java3d.RotationInterpolator;
 import org.jogamp.java3d.Shape3D;
 import org.jogamp.java3d.Text3D;
 import org.jogamp.java3d.Transform3D;
 import org.jogamp.java3d.TransformGroup;
+import org.jogamp.java3d.TransparencyAttributes;
 import org.jogamp.java3d.WakeupCondition;
 import org.jogamp.java3d.WakeupCriterion;
 import org.jogamp.java3d.WakeupOnAWTEvent;
+import org.jogamp.java3d.WakeupOnCollisionEntry;
+import org.jogamp.java3d.WakeupOnCollisionExit;
 import org.jogamp.java3d.WakeupOr;
 import org.jogamp.java3d.utils.geometry.ColorCube;
 import org.jogamp.vecmath.Color3f;
 import org.jogamp.vecmath.Point3f;
 import org.jogamp.vecmath.Vector3d;
-
 
 public class CubeBehavior extends Behavior {
 
@@ -59,9 +62,10 @@ public class CubeBehavior extends Behavior {
 	
 	protected WakeupCondition keyCriterion;
 	
-	private static Color3f colors[] = {CommonsEK.Red, CommonsEK.Blue, CommonsEK.Green, CommonsEK.Yellow};
+	private static Color3f colors[] = {CommonsJJ.Red, CommonsJJ.Blue, CommonsJJ.Green, CommonsJJ.Yellow};
 	private Appearance shapeAppearance;
 	private ColoringAttributes shapeColoring;
+
 	
 	//Controls
 	//Q rotates left
@@ -120,8 +124,8 @@ public class CubeBehavior extends Behavior {
 		WakeupCriterion wakeup;
 		AWTEvent[] event;
 		
-		Color3f hilightClr1 = CommonsEK.Green;
-		Color3f hilightClr2 = CommonsEK.Red;
+		Color3f hilightClr1 = CommonsJJ.Green;
+		Color3f hilightClr2 = CommonsJJ.Red;
 		ColoringAttributes highlight1 = new ColoringAttributes(hilightClr1, ColoringAttributes.SHADE_GOURAUD);
 		ColoringAttributes highlight2 = new ColoringAttributes(hilightClr2, ColoringAttributes.SHADE_GOURAUD);
 		
@@ -159,6 +163,11 @@ public class CubeBehavior extends Behavior {
 				currScore++;
 				//used to update text
 				updateText(currScore);
+				if(currScore == 3) {
+					DoorIndicator.setNeptune(true);
+					DoorIndicator.checkNeptune();
+					DoorIndicator.checkIFcomplete();
+				}
 			}
 			//if any confirmed entry does not match seq
 		}else if(combination <= 3 && inCorrect == true) {
@@ -291,7 +300,7 @@ public class CubeBehavior extends Behavior {
 	//reset the colors and sequence
 	protected void resetCombo() {
 		
-		//first reset cube to starting postion
+		//first reset cube to starting position
 		for(int i = 0; i < combination; i++) {
 			rotLeftReset();
 		}
@@ -417,7 +426,7 @@ public class CubeBehavior extends Behavior {
 		Transform3D trans3 = new Transform3D();
 		Transform3D trans4 = new Transform3D();
 		Transform3D trans[] = {trans1, trans2, trans3, trans4};
-		//int seq[] = new int[4];
+		int seq[] = new int[4];
 		
 		Random rand =  new Random(System.currentTimeMillis());
 		int upper = 4;
@@ -463,12 +472,8 @@ public class CubeBehavior extends Behavior {
 		
 		text.setGeometry(poly);
 		
-		if (n >= 5) {
-			DoorIndicator.setNeptune(true);
-			DoorIndicator.checkNeptune();
-		}
-		
 		
 	}
+	
 	
 }

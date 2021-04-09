@@ -40,11 +40,11 @@ public class KeyMovement extends Behavior {
 
 	private double rot = Math.PI / 16.0;
 	
-	private double move = 5;
+	private double move = 1;
 	private double speed = NORMAL;
 
-	private final double forwardScale = 1.0;
-	private final double backwardScale = 0.75;
+	private final double forwardScale = 0.5;
+	private final double backwardScale = 0.25;
 
 	private int fw = KeyEvent.VK_UP;
 	private int bk = KeyEvent.VK_DOWN;
